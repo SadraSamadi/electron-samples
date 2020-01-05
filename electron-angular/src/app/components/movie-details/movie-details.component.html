@@ -1,0 +1,32 @@
+<div *ngIf="movie" class="p-4">
+
+  <div class="flex justify-end mb-2">
+    <button mat-raised-button
+            color="accent"
+            class="w-24"
+            [disabled]="!movie?.details"
+            (click)="onSave()">
+      Save
+    </button>
+    <span class="w-2"></span>
+    <button mat-raised-button
+            color="accent"
+            class="w-24"
+            (click)="onSearch()">
+      Search
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="mt-2">
+    {{movie | json}}
+  </div>
+
+</div>
+
+<div *ngIf="!movie" class="flex w-full h-full justify-center items-center">
+
+  <p class="text-orange">Nothing Selected!</p>
+
+</div>

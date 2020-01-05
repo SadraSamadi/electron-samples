@@ -1,0 +1,42 @@
+<div class="flex flex-col h-full">
+
+  <mat-toolbar class="flex-none z-10 mat-elevation-z2" color="primary">
+    <a mat-icon-button routerLink="/">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <span>Preferences</span>
+    <span class="flex-grow"></span>
+    <button mat-icon-button
+            matTooltip="Save"
+            [disabled]="form.invalid || form.untouched || !form.dirty"
+            (click)="onSave()">
+      <mat-icon>save</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <div class="flex-grow p-4 overflow-y-auto">
+
+    <form [formGroup]="form">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Input</mat-label>
+        <input matInput formControlName="input">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Textarea</mat-label>
+        <textarea matInput formControlName="textarea" rows="3"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Select</mat-label>
+        <mat-select formControlName="select">
+          <mat-option *ngFor="let i of [1, 2, 3, 4, 5]" [value]="i">Option {{i}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+    </form>
+
+  </div>
+
+</div>

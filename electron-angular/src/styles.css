@@ -1,0 +1,29 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~tailwindcss/dist/components.css";
+@import "~tailwindcss/dist/utilities.css";
+@import "~animate.css/animate.css";
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: #8795a1;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #606f7b;
+}
+
+button {
+  outline: none !important;
+}
