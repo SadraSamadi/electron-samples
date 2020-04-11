@@ -2,9 +2,9 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import {series} from 'gulp';
 import del from 'del';
+import jest from 'jest';
 import {compile, serve} from './builder';
 import {pack} from './pack';
-import jest from 'jest';
 import Paths from './paths';
 
 function clean(): Promise<any> {

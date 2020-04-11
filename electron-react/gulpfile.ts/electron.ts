@@ -1,8 +1,9 @@
-import args from './args';
 import {boundMethod} from 'autobind-decorator';
 import child_process, {ChildProcess} from 'child_process';
 import electron from 'electron';
+import _ from 'lodash';
 import {Observable, Subject} from 'rxjs';
+import args from './args';
 
 export default class Electron {
 
@@ -11,15 +12,20 @@ export default class Electron {
   private _closed = new Subject<void>();
 
   public start(): void {
-    if (this.child)
+    if (this.child && !this.child.killed)
       this.stop();
     let cmd = electron as unknown as string;
-    this.child = child_process.spawn(cmd, ['.', '--port=' + args.port], {stdio: 'inherit'});
-    this.child.once('close', this.close);
+    this.child = child_process.spawn(cmd, ['.'], {
+      stdio: 'inherit',
+      env: _.assign(process.env, {
+        PORT: String(args.port)
+      })
+    });
+    this.child.on('close', this.close);
   }
 
   public stop(): void {
-    if (!this.child)
+    if (!this.child || this.child.killed)
       return;
     this.child.off('close', this.close);
     this.child.kill();

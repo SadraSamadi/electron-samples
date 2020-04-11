@@ -1,28 +1,35 @@
-import {Configuration, ProgressPlugin, RuleSetRule} from 'webpack';
+import {Configuration, ProgressPlugin} from 'webpack';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import OptimizeCSSAssetsWebpackPlugin from 'optimize-css-assets-webpack-plugin';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
 import tailwindcss from 'tailwindcss';
 import postcssPresetEnv from 'postcss-preset-env';
-import autoprefixer from 'autoprefixer';
-import merge from 'webpack-merge';
+import webpackMerge from 'webpack-merge';
 import Paths from './paths';
 
 const isDev = process.env.APP_ENV === 'dev';
 
-function scriptsRule(include: string): RuleSetRule {
-  return {
-    include,
-    test: /\.tsx?$/,
-    loader: 'ts-loader'
-  };
-}
+const blacklist = [
+  'electron-window-state',
+  'express',
+  'get-port',
+  'socket.io',
+  'electron'
+];
 
 const common: Configuration = {
-  mode: isDev ? 'development' : 'production',
+  mode: isDev ? 'development' : 'none',
   entry: './',
   output: {
     filename: 'index.js'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader'
+      }
+    ]
   },
   resolve: {
     extensions: ['.js', '.ts', '.tsx']
@@ -30,31 +37,29 @@ const common: Configuration = {
   plugins: [
     new ProgressPlugin()
   ],
-  devtool: isDev ? 'eval' : 'source-map',
+  devtool: isDev ? 'cheap-module-source-map' : 'source-map',
+  externals: (context, request, callback) =>
+    blacklist.some(item => item.includes(request)) ?
+      callback(null, 'commonjs ' + request) :
+      callback(undefined, undefined),
   node: false
 };
 
-const main: Configuration = {
+const main = webpackMerge(common, {
   context: Paths.SRC_MAIN,
   output: {
     path: Paths.DIST_MAIN
   },
-  module: {
-    rules: [
-      scriptsRule(Paths.SRC_MAIN)
-    ]
-  },
   target: 'electron-main'
-};
+});
 
-const renderer: Configuration = {
+const renderer = webpackMerge(common, {
   context: Paths.SRC_RENDERER,
   output: {
     path: Paths.DIST_RENDERER
   },
   module: {
     rules: [
-      scriptsRule(Paths.SRC_RENDERER),
       {
         test: /\.s?css$/,
         use: [
@@ -70,12 +75,8 @@ const renderer: Configuration = {
             loader: 'postcss-loader',
             options: {
               plugins: [
-                tailwindcss({
-                  prefix: '',
-                  important: true
-                }),
-                postcssPresetEnv,
-                autoprefixer
+                tailwindcss,
+                postcssPresetEnv
               ],
               sourceMap: true
             }
@@ -87,29 +88,36 @@ const renderer: Configuration = {
             }
           }
         ]
+      },
+      {
+        test: /\.(png|jpe?g)$/,
+        loader: 'file-loader',
+        options: {
+          outputPath: 'assets'
+        }
       }
     ]
   },
-  optimization: {
-    minimizer: [
-      new OptimizeCSSAssetsWebpackPlugin({
-        cssProcessorOptions: {
-          map: {
-            inline: false,
-            annotation: true
-          }
-        }
-      })
-    ]
-  },
   plugins: [
-    new MiniCssExtractPlugin({filename: 'index.css'}),
-    new HtmlWebpackPlugin({template: 'index.html'})
+    new HtmlWebpackPlugin({
+      template: 'index.html',
+      minify: isDev ? false : {
+        collapseWhitespace: true
+      }
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'index.css'
+    }),
+    new OptimizeCSSAssetsWebpackPlugin({
+      cssProcessorOptions: {
+        map: {
+          inline: false,
+          annotation: true
+        }
+      }
+    })
   ],
   target: 'electron-renderer'
-};
+});
 
-export default {
-  main: merge(common, main),
-  renderer: merge(common, renderer)
-};
+export default {main, renderer};
